@@ -15,7 +15,7 @@ void solve(){
 	n=read(),k=read();
 	rep(i,1,n) w[i]=read();
 	for(int i=1;i<=n;++i) heap.push({w[i],0});
-// 	while((n-1)%(k-1)!=0) heap.push({0,0}),n++;
+ 	while((n-1)%(k-1)!=0) heap.push({0,0}),n++;
 	int ans=0;
 	while(heap.size()>1){
 	    Pos c; c.x=0,c.y=0;
