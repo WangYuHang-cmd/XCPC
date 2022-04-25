@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>Foobar</title>
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <link rel="stylesheet" href="./dist/reset.css" />
+    <link rel="stylesheet" href="./dist/reveal.css" />
+    <link rel="stylesheet" href="./dist/theme/league.css" id="theme" />
+    <link rel="stylesheet" href="./css/highlight/zenburn.css" />
+
+
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template">
+
+## 数 据 结 构 2
+
+- 优先队列
+- 单调队列
+- 单调栈
+- 线段树
+
+---
+
+### 优 先 队 列
+
+- 优先队列是堆的一种实现形式，也是十分方便的STL
+
+<hr>
+
+今天主要讲解：
+
+- 用优先队列来辅助进行贪心算法
+
+---
+
+#### 某谷 P2168 [NOI2015] [荷马史诗]
+
+一篇文章由n种不同的单词组成,第i个单词的出现频率为$w_i$。
+
+用k进制串代替第i个单词，满足不存在一个单词使得其为另一个单词的前缀。
+
+求文章的最短长度和此情况下最长单词的最短长度
+
+$2≤n≤100000$
+
+$2≤k≤9$
+
+$1≤w_i≤10^{12}$
+
+---
+
+###### 思考：
+
+第i个单词的出现频率为$w_i$，要求文章长度最短，最长单词最短----大致策略是贪心
+
+满足不存在一个单词使得其为另一个单词的前缀----立刻联想到我们在构造哈夫曼树时满足的性质，哈夫曼树上的任何一个编码都不会构成另外一个编码的前缀。
+
+---
+
+###### 构造策略：
+
+- 权值越大的叶结点约靠近根结点。
+- 权值约小的叶子结点，越远离根结点。
+
+---
+
+###### 实现方式：
+
+- 使用一个优先队列维护单词的出现频率和目前的长度
+- 从堆顶取出两个单词并将它们拼接，放回
+- 迭代上述操作知道单词数量变成1
+
+- [OvO](https://paste.ubuntu.com/p/ZWjJhtc6rS/)
+
+---
+
+#### 反悔贪心
+
+> 贪心本身是没有反悔操作的，贪心求的就是当前的最优解。但是我们可以通过选取局部最优解并不断修改选取这个最优解之后带来的影响来获得全局最优解。
+
+---
+
+###### 反悔自动机
+
+选择**直观上最接近全局最优解**的贪心策略，若发现最优解不对，就想办法**自动**支持反悔策略
+
+---
+
+###### 反悔堆
+
+即通过**堆**（大根堆、小根堆）来维护当前贪心策略的最优解，若发现最优解不对，就退回上一步，更新最优解。
+
+---
+
+[**CF865D** Buy Low Sell High](https://codeforces.com/problemset/problem/865/D)
+
+> 已知接下来N天的股票价格,每天你可以买进一股股票,卖出一股股票,或者什么也不做.
+>
+> N天之后你拥有的股票应为0,当然,希望这N天内能够赚足够多的钱.
+
+---
+
+每次选取最接近全局最优解的策略，如果不对，就恢复原样并重新进行贪心
+
+```cpp
+priority_queue<int,vector<int>,greater<int>> heap;
+int n,m,a[N];
+
+void solve(){
+	LL ans=0;
+	n=read();
+	rep(i,1,n) a[i]=read();
+	for(int i=1;i<=n;++i){
+		heap.push(a[i]);
+		if(heap.size()&&heap.top()<a[i]){
+			ans+=a[i]-heap.top(); heap.pop();
+			heap.push(a[i]);
+		}
+	}
+	print(ans);
+}
+
+```
+
+---
+
+### 单调队列
+
+滑动窗口：本质是单调队列，维护区间内比当前数大/小的数的下标。
+
+```cpp
+for(int i=1;i<=n;i++){
+    //先判断是否需要出队操作
+    if(hh<=tt&&i-k+1>q[hh]) hh++;
+    //再滑动窗口
+    while(hh<=tt&&arr[i]<=arr[q[tt]]) tt--;
+    q[++tt]=i;
+}
+```
+
+
+
+---
+
+### 单调栈
+
+顾名思义，在栈中维持某一性质的单调性。
+
+作用：遍历时按照遍历方式快速找出比当前数大/小的第一个数
+
+---
+
+### P4147 玉蟾宫
+
+土地被分成 $N \times M$ 个格子;
+
+每个格子里写着 `'R'` 或者 `'F'`.
+
+求只含`'F'`的最大面积的矩形
+
+$1 \leq N, M \leq 1000$
+
+---
+
+### 做法：
+
+预处理每一行中每一个位置向上的最大连续`F`数量
+
+然后用单调栈正向/反向维护出
+
+按照这种高度的最大延伸的最左端和最右端
+
+即左右第一个小于当前高度的第一个位置。
+
+最后遍历取`max`即可
+
+[OvO](https://paste.ubuntu.com/p/6yHZMgXJXY/)
+
+---
+
+## **线段树**
+
+将线性结构用树形结构进行维护，类似于分治思想，可以将修改查询的时间复杂度降低到$log$级别
+
+[推荐学习博客](https://wangyuhang-cmd.github.io/2021/08/12/%E7%BA%BF%E6%AE%B5%E6%A0%91/)
+
+---
+
+#### P3372 【模板】[线段树 1](https://www.luogu.com.cn/problem/P3372)    &   P3373 【模板】[线段树 2](https://www.luogu.com.cn/problem/P3373)
+
+- 单点修改，区间查询
+- 区间修改，区间查询
+
+> 对于修改操作可以直接留在那里，查询的时候累加即可。常用于可持久化线段树的区间修改
+
+一个小应用：扫描线
+
+---
+
+##### P4145 上帝造题的七分钟 2  [(势能树/暴力树)](https://www.luogu.com.cn/problem/P4145)
+
+- *m* 行每行三个整数 `k l r`。
+
+- k=0表示给 [l,r] 中的每个数开平方。
+- k=1 表示询问 [l,r] 中各个数的和。
+
+$1\le n,m\le 10^5$
+
+$1\le l,r\le n$
+
+---
+
+一种暴力方式：
+
+给每个数节点记录一个开根号次数，如果超过一定的次数直接区间置数为1
+
+一个数最多开根号6次便会变成1，因此最坏复杂度就是$6 \cdot nlogn+nlogn$
+
+这也是我们所说的，复杂度被势能均摊了。
+
+---
+
+但是，如果这道题带修了呢？
+
+- *m* 行每行三个整数 `k l r`。
+
+- k=0表示给 [l,r] 中的每个数开平方。
+- k=1 表示询问 [l,r] 中各个数的和x。
+- k=2 表示给区间[l,r]加上上一次的询问值x
+
+---
+
+我们应该换一种衡量势能的方式
+
+我们可以发现，随着不断开根号
+
+区间的最大值和最小值的差距是不断减小的
+
+而修改并不影响区间最大值和最小值的差。
+
+因此，做法就是记录一个区间最大值和最小值
+
+当最大值和最小值不相等的时候就直接暴力修改
+
+如果最大值和最小值相等了，就是改为区间修改
+
+一个数最多开根号6次变成1，因此，总均摊复杂度为$k \cdot nlogn$
+
+---
+
+> # Over
+
+</script></section></div>
+    </div>
+
+    <script src="./dist/reveal.js"></script>
+
+    <script src="./plugin/markdown/markdown.js"></script>
+    <script src="./plugin/highlight/highlight.js"></script>
+    <script src="./plugin/zoom/zoom.js"></script>
+    <script src="./plugin/notes/notes.js"></script>
+    <script src="./plugin/math/math.js"></script>
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath
+        ]
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"transition":"fade"}, queryOptions);
+    </script>
+
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+</html>
