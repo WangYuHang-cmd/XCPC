@@ -22,6 +22,7 @@
 - 优先队列
 - 单调队列
 - 单调栈
+- 树状数组
 - 线段树
 
 ---
@@ -143,7 +144,37 @@ for(int i=1;i<=n;i++){
 }
 ```
 
+---
 
+### P1714 [切蛋糕](https://www.luogu.com.cn/problem/P1714)
+
+在数列$\{p_n\}$ 中，找出一个子段$ [l,r](r-l+1\le m)$,最大化 $\sum\limits_{i=l}^r  p_i$
+
+$1\le n\le5\times 10^5,|p_i|≤500$
+
+---
+
+- 如何快速求字段和？ 前缀和
+- 位置p结尾的最大子段？ `s[p]-s[l]` 
+- $s[l]=min\{p[i]\},i \in [p-m+1, p-1]$
+- 联想到什么数据结构？ 单调队列
+
+```cpp
+void solve(){
+	int ans=0;
+	n=read(); m=read();
+	rep(i,1,n) a[i]=a[i-1]+read();
+	hh=0,tt=-1;
+	q[++tt]=0;
+	for(int i=1;i<=n;++i){
+		while(hh<=tt&&i-q[hh]>m) hh++;
+		while(hh<=tt&&a[q[tt]]>=a[i]) tt--;
+		if(hh<=tt) ans=max(ans, a[i]-a[q[hh]]);
+		q[++tt]=i;
+	}
+	print(ans);
+}
+```
 
 ---
 
@@ -180,6 +211,63 @@ $1 \leq N, M \leq 1000$
 最后遍历取`max`即可
 
 [OvO](https://paste.ubuntu.com/p/6yHZMgXJXY/)
+
+---
+
+#### 树状数组 `Binary Index Tree`
+
+推荐[学习博客](https://wangyuhang-cmd.github.io/2021/08/11/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/)
+
+---
+
+**查询操作**
+
+```cpp
+int ask(int x){
+    int res=0;
+    for(int i=x;i;i-=lowbit(i))
+        res+=tree[i];
+    return res;
+}
+```
+
+**修改操作**
+
+```cpp
+int add(int x,int c){ //在x位置插入c
+    for(int i=x;i<=n;i+=lowbit(i))
+        tree[i]+=c;
+}
+```
+
+---
+
+树状数组求[逆序对](https://www.luogu.com.cn/problem/P1908)：
+
+- 求对于$i \lt j$ 满足$a[i] > a[j]$的数量
+
+- 开一颗权值树状数组
+- 顺序扫描的过程中$O(log{n})$统计符合要求的数的数量
+
+```cpp
+for(int i=1;i<=n;++i){
+    add(a[i],1);
+    ans += i-ask(a[i]);
+}
+```
+
+---
+
+#### P1966 [NOIP2013 提高组] [火柴排队](https://www.luogu.com.cn/problem/P1966)
+
+- 给定两个序列`a[N]`和`b[N]`,每次你可以交换`b[N]`数组中的两个数，要求最小化$\sum (a_i-b_i)^2$，问最少的操作次数
+
+---
+
+- 观察式子$\sum (a_i-b_i)^2$，为了最小化，即要求`b[]`中的排列次序和`a[]`一样
+- 相当于根据`a[]`中的次序，将`b[]`的下标进行一个映射
+- 映射之后求一下逆序对，即可
+- 逆序对在交换次数中是常见套路
 
 ---
 
@@ -254,6 +342,12 @@ $1\le l,r\le n$
 ---
 
 > # Over
+
+---
+
+```bash
+reveal-md 4.27_DS.md -w --theme  league
+```
 
 </script></section></div>
     </div>
